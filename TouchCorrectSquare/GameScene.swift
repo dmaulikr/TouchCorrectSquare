@@ -10,8 +10,9 @@ import SpriteKit
 
 class GameScene: SKScene {
     
-    var leftSquare: SKSpriteNode!
-    var rightSquare: SKSpriteNode!
+    var leftSquare: SKSpriteNode?
+    var rightSquare: SKSpriteNode?
+    
     var mainLabel: UILabel!
     var scoreLabel: SKLabelNode!
     
@@ -25,12 +26,14 @@ class GameScene: SKScene {
     }
     
     var currentScore = 0
+    var timer = 12
     
     override func didMoveToView(view: SKView) {
         backgroundColor = customBlue
         spawnSquares()
         mainLabel = spawnMainLabel()
         scoreLabel = spawnScoreLabel()
+        countDown()
     }
     
     override func touchesBegan(touches: Set<UITouch>, withEvent event: UIEvent?) {
@@ -38,11 +41,13 @@ class GameScene: SKScene {
         for touch in touches {
             let touchLocation = touch.locationInNode(self)
             if let touchedNode = nodeAtPoint(touchLocation) as? SKSpriteNode {
-                if touchedNode.color == offWhiteColor {
+                if touchedNode.color.description == offWhiteColor.description {
                     addToScore()
                     spawnSquares()
                 } else {
                     gameOver()
+                    print("\(touchedNode.color)")
+                    print("\(offWhiteColor)")
                 }
             }
             
@@ -60,6 +65,9 @@ class GameScene: SKScene {
 extension GameScene {
     
     func spawnSquares() {
+        leftSquare?.removeFromParent()
+        rightSquare?.removeFromParent()
+        
         var one: UIColor
         var two: UIColor
         
@@ -103,6 +111,28 @@ extension GameScene {
     }
 }
 
+// MARK: Timer Function
+extension GameScene {
+    
+    func countDown() {
+        
+        let wait = SKAction.waitForDuration(1.0)
+        let countDown = SKAction.runBlock {
+            self.timer--
+
+            if self.timer <= 10 && self.timer > 0 {
+                self.mainLabel.text = "\(self.timer)"
+
+            }
+            if self.timer <= 0 {
+                self.gameOver()
+            }
+        }
+        let sequence = SKAction.sequence([wait, countDown])
+        runAction(SKAction.repeatActionForever(sequence))
+    }
+}
+
 // MARK: - Helper Functions
 extension GameScene {
     
@@ -127,6 +157,7 @@ extension GameScene {
     }
     
     func gameOver() {
+        timer = 0
         scoreLabel.removeFromParent()
         mainLabel.text = "Loser!"
         
